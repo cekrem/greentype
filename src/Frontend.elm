@@ -70,7 +70,7 @@ updateFromBackend msg model =
         TypedCharacter total char ->
             let
                 message =
-                    String.fromInt total ++ " characters typed (globally!) in this version!"
+                    String.fromInt total ++ " characters typed (globally!) since the initial release of this app!"
             in
             ( { model | message = message, lastKey = Just char }, Cmd.none )
 
