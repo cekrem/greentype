@@ -1,0 +1,18 @@
+<script>
+  customElements.define(
+    "thock-trigger",
+    class extends HTMLElement {
+      static get observedAttributes() {
+        return ["trigger"];
+      }
+
+      attributeChangedCallback(name, oldVal, newVal) {
+        if (name === "trigger" && newVal !== oldVal && newVal !== "") {
+          const thock = new Audio("thock.m4a");
+          console.log("trigger");
+          thock.play().catch((e) => console.error(e));
+        }
+      }
+    },
+  );
+</script>
