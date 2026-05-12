@@ -32,7 +32,7 @@ init : Url.Url -> Nav.Key -> ( Model, Cmd FrontendMsg )
 init _ key =
     ( { key = key
       , message = "Start typing and behold the bliss"
-      , lastKey = Nothing
+      , recentKeys = []
       }
     , Cmd.none
     )
@@ -61,18 +61,26 @@ update msg model =
             ( model, Cmd.none )
 
         KeyPressed key ->
-            ( model, Lamdera.sendToBackend <| ClientTyped key )
+            case String.uncons key of
+                Just ( 'E', "nter" ) ->
+                    ( model, Lamdera.sendToBackend <| ClientTyped '↵' )
+
+                Just ( char, "" ) ->
+                    ( model, Lamdera.sendToBackend <| ClientTyped char )
+
+                _ ->
+                    ( model, Cmd.none )
 
 
 updateFromBackend : ToFrontend -> Model -> ( Model, Cmd FrontendMsg )
 updateFromBackend msg model =
     case msg of
-        TypedCharacter total char ->
+        TypedCharacter total recentKeys ->
             let
                 message =
                     String.fromInt total ++ " characters typed (globally!) since the initial release of this app!"
             in
-            ( { model | message = message, lastKey = Just char }, Cmd.none )
+            ( { model | message = message, recentKeys = recentKeys }, Cmd.none )
 
 
 
@@ -89,32 +97,37 @@ view model =
     { title = title
     , body =
         [ Html.div
-            [ Attr.style "text-align" "center"
-            , Attr.style "padding-top" "8rem"
-            , Attr.style "font-family" "monospace"
+            [ Attr.class "pt-32"
+            , Attr.class "font-mono text-center"
             ]
             [ Html.h1
-                [ Attr.style "padding" "0 8vmin"
-                , Attr.style "font-size" "4vmin"
-                ]
+                [ Attr.class "px-[8vw] text-[4vw]" ]
                 [ Html.text title ]
             , Html.p
-                [ Attr.style "padding-top" "40px"
-                ]
+                [ Attr.class "pt-10" ]
                 [ Html.text model.message ]
-            , case model.lastKey of
-                Just key ->
-                    Html.div
-                        [ Attr.style "font-size" "6vw"
-                        , Attr.style "overflow-wrap" "anywhere"
-                        , Attr.style "hyphens" "auto"
-                        ]
-                        [ Html.text key
-                        , Html.node "thock-trigger" [ Attr.attribute "trigger" model.message ] []
-                        ]
-
-                Nothing ->
-                    Html.text ""
+            , Html.div
+                [ Attr.class "flex flex-row-reverse justify-around"
+                , Attr.class "px-[8vw] pt-4"
+                , Attr.class "text-[8vw]"
+                ]
+                (model.recentKeys
+                    |> List.indexedMap
+                        (\i char ->
+                            let
+                                opacity =
+                                    (1.0
+                                        - (toFloat i * 0.03)
+                                    )
+                                        |> String.fromFloat
+                            in
+                            Html.div
+                                [ Attr.class "w-4"
+                                , Attr.style "opacity" opacity
+                                ]
+                                [ Html.text <| String.fromChar char ]
+                        )
+                )
             ]
         ]
     }
@@ -132,6 +145,4 @@ onKeyPressSubscription =
 keyCodeDecoder : Json.Decoder FrontendMsg
 keyCodeDecoder =
     Json.field "key" Json.string
-        |> Json.map (String.replace "Enter" "↵")
-        |> Json.map (String.replace " " "_")
         |> Json.map KeyPressed

@@ -37,22 +37,17 @@ update msg model =
 updateFromFrontend : SessionId -> ClientId -> ToBackend -> Model -> ( Model, Cmd BackendMsg )
 updateFromFrontend sessionId clientId msg model =
     case msg of
-        ClientTyped key ->
-            case ( String.uncons key, model.recentKeys ) of
-                ( Just ( char, "" ), _ ) ->
-                    let
-                        totalTyped =
-                            model.typedCharacters + 1
+        ClientTyped char ->
+            let
+                typedCharacters =
+                    model.typedCharacters + 1
 
-                        recentKeys =
-                            char :: List.take 64 model.recentKeys
-                    in
-                    ( { model
-                        | typedCharacters = totalTyped
-                        , recentKeys = recentKeys
-                      }
-                    , Lamdera.broadcast <| TypedCharacter totalTyped (recentKeys |> List.reverse >> String.fromList)
-                    )
-
-                _ ->
-                    ( model, Cmd.none )
+                recentKeys =
+                    char :: List.take 32 model.recentKeys
+            in
+            ( { model
+                | typedCharacters = typedCharacters
+                , recentKeys = recentKeys
+              }
+            , Lamdera.broadcast <| TypedCharacter typedCharacters recentKeys
+            )
