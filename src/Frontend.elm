@@ -70,7 +70,7 @@ updateFromBackend msg model =
         TypedCharacter total char ->
             let
                 message =
-                    String.fromInt total ++ " characters typed (globally!) in this session!"
+                    String.fromInt total ++ " characters typed (globally!) in this version!"
             in
             ( { model | message = message, lastKey = Just char }, Cmd.none )
 
@@ -90,7 +90,7 @@ view model =
     , body =
         [ Html.div
             [ Attr.style "text-align" "center"
-            , Attr.style "padding-top" "40px"
+            , Attr.style "padding-top" "8rem"
             , Attr.style "font-family" "monospace"
             ]
             [ Html.h1
@@ -105,7 +105,9 @@ view model =
             , case model.lastKey of
                 Just key ->
                     Html.div
-                        [ Attr.style "font-size" "32vmin"
+                        [ Attr.style "font-size" "6vw"
+                        , Attr.style "overflow-wrap" "anywhere"
+                        , Attr.style "hyphens" "auto"
                         ]
                         [ Html.text key
                         , Html.node "thock-trigger" [ Attr.attribute "trigger" model.message ] []
@@ -130,5 +132,6 @@ onKeyPressSubscription =
 keyCodeDecoder : Json.Decoder FrontendMsg
 keyCodeDecoder =
     Json.field "key" Json.string
-        |> Json.map (String.replace " " "Space")
+        |> Json.map (String.replace "Enter" "↵")
+        |> Json.map (String.replace " " "_")
         |> Json.map KeyPressed

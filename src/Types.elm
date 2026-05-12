@@ -14,6 +14,7 @@ type alias FrontendModel =
 
 type alias BackendModel =
     { typedCharacters : Int
+    , recentKeys : List Char
     }
 
 
@@ -33,4 +34,3 @@ type BackendMsg
 
 type ToFrontend
     = TypedCharacter Int String
-
