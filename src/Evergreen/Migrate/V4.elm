@@ -51,4 +51,26 @@ backendMsg old =
 
 toFrontend : Evergreen.V2.Types.ToFrontend -> MsgMigration Evergreen.V4.Types.ToFrontend Evergreen.V4.Types.FrontendMsg
 toFrontend old =
-    MsgOldValueIgnored
+    MsgMigrated ( migrate_Types_ToFrontend old, Cmd.none )
+
+
+migrate_Types_FrontendModel : Evergreen.V2.Types.FrontendModel -> Evergreen.V4.Types.FrontendModel
+migrate_Types_FrontendModel old =
+    { key = old.key
+    , message = old.message
+    , recentKeys = []
+    }
+
+
+migrate_Types_ToBackend : Evergreen.V2.Types.ToBackend -> Evergreen.V4.Types.ToBackend
+migrate_Types_ToBackend old =
+    case old of
+        Evergreen.V2.Types.ClientTyped p0 ->
+            Evergreen.V4.Types.ClientTyped ' '
+
+
+migrate_Types_ToFrontend : Evergreen.V2.Types.ToFrontend -> Evergreen.V4.Types.ToFrontend
+migrate_Types_ToFrontend old =
+    case old of
+        Evergreen.V2.Types.TypedCharacter p0 p1 ->
+            Evergreen.V4.Types.TypedCharacter p0 (String.toList p1)

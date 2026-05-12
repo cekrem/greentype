@@ -128,6 +128,7 @@ view model =
                                 [ Html.text <| String.fromChar char ]
                         )
                 )
+            , Html.node "thock-trigger" [ Attr.attribute "trigger" model.message ] []
             ]
         ]
     }
