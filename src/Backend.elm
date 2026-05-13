@@ -45,9 +45,16 @@ updateFromFrontend sessionId clientId msg model =
                 recentKeys =
                     char :: List.take 32 model.recentKeys
             in
-            ( { model
-                | typedCharacters = typedCharacters
-                , recentKeys = recentKeys
-              }
-            , Lamdera.broadcast <| TypedCharacter typedCharacters recentKeys
-            )
+            broadcastData
+                { model
+                    | typedCharacters = typedCharacters
+                    , recentKeys = recentKeys
+                }
+
+        RequestedData ->
+            broadcastData model
+
+
+broadcastData : Model -> ( Model, Cmd backendMsg )
+broadcastData model =
+    ( model, Lamdera.broadcast <| DataUpdated model.typedCharacters model.recentKeys )

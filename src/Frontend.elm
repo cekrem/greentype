@@ -31,10 +31,9 @@ app =
 init : Url.Url -> Nav.Key -> ( Model, Cmd FrontendMsg )
 init _ key =
     ( { key = key
-      , message = "Start typing and behold the bliss"
-      , recentKeys = []
+      , data = Nothing
       }
-    , Cmd.none
+    , Lamdera.sendToBackend RequestedData
     )
 
 
@@ -65,6 +64,9 @@ update msg model =
                 Just ( 'E', "nter" ) ->
                     ( model, Lamdera.sendToBackend <| ClientTyped '↵' )
 
+                Just ( ' ', "" ) ->
+                    ( model, Lamdera.sendToBackend <| ClientTyped '_' )
+
                 Just ( char, "" ) ->
                     ( model, Lamdera.sendToBackend <| ClientTyped char )
 
@@ -75,12 +77,16 @@ update msg model =
 updateFromBackend : ToFrontend -> Model -> ( Model, Cmd FrontendMsg )
 updateFromBackend msg model =
     case msg of
-        TypedCharacter total recentKeys ->
+        DataUpdated total recentKeys ->
             let
-                message =
-                    String.fromInt total ++ " characters typed (globally!) since the initial release of this app!"
+                data =
+                    Just
+                        { message =
+                            String.fromInt total ++ " characters typed (globally!) since the initial release of this app!"
+                        , recentKeys = recentKeys
+                        }
             in
-            ( { model | message = message, recentKeys = recentKeys }, Cmd.none )
+            ( { model | data = data }, Cmd.none )
 
 
 
@@ -96,41 +102,46 @@ view : Model -> Browser.Document FrontendMsg
 view model =
     { title = title
     , body =
-        [ Html.div
-            [ Attr.class "pt-32"
-            , Attr.class "font-mono text-center"
-            ]
-            [ Html.h1
-                [ Attr.class "px-[8vw] text-[4vw]" ]
-                [ Html.text title ]
-            , Html.p
-                [ Attr.class "pt-10" ]
-                [ Html.text model.message ]
-            , Html.div
-                [ Attr.class "flex flex-row-reverse justify-around"
-                , Attr.class "px-[8vw] pt-4"
-                , Attr.class "text-[8vw]"
-                ]
-                (model.recentKeys
-                    |> List.indexedMap
-                        (\i char ->
-                            let
-                                opacity =
-                                    (1.0
-                                        - (toFloat i * 0.03)
-                                    )
-                                        |> String.fromFloat
-                            in
-                            Html.div
-                                [ Attr.class "w-4"
-                                , Attr.style "opacity" opacity
-                                ]
-                                [ Html.text <| String.fromChar char ]
+        case model.data of
+            Just { recentKeys, message } ->
+                [ Html.div
+                    [ Attr.class "flex flex-col justify-center h-screen"
+                    , Attr.class "font-mono text-center"
+                    ]
+                    [ Html.h1
+                        [ Attr.class "px-[8vw] text-[4vw]" ]
+                        [ Html.text title ]
+                    , Html.p
+                        [ Attr.class "pt-10" ]
+                        [ Html.text message ]
+                    , Html.div
+                        [ Attr.class "flex flex-row-reverse justify-around items-center"
+                        , Attr.class "w-2/3 h-48"
+                        , Attr.class "text-[6vw]"
+                        ]
+                        (recentKeys
+                            |> List.indexedMap
+                                (\i char ->
+                                    let
+                                        faded =
+                                            (1.0
+                                                - (toFloat i * 0.04)
+                                            )
+                                                |> String.fromFloat
+                                    in
+                                    Html.div
+                                        [ Attr.style "opacity" faded
+                                        , Attr.style "font-size" (faded ++ "em")
+                                        ]
+                                        [ Html.text <| String.fromChar char ]
+                                )
                         )
-                )
-            , Html.node "thock-trigger" [ Attr.attribute "trigger" model.message ] []
-            ]
-        ]
+                    , Html.node "thock-trigger" [ Attr.attribute "trigger" message ] []
+                    ]
+                ]
+
+            Nothing ->
+                []
     }
 
 

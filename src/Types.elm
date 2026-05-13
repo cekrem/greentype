@@ -7,8 +7,11 @@ import Url exposing (Url)
 
 type alias FrontendModel =
     { key : Key
-    , message : String
-    , recentKeys : List Char
+    , data :
+        Maybe
+            { message : String
+            , recentKeys : List Char
+            }
     }
 
 
@@ -26,6 +29,7 @@ type FrontendMsg
 
 type ToBackend
     = ClientTyped Char
+    | RequestedData
 
 
 type BackendMsg
@@ -33,4 +37,4 @@ type BackendMsg
 
 
 type ToFrontend
-    = TypedCharacter Int (List Char)
+    = DataUpdated Int (List Char)
