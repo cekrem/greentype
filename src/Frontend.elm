@@ -136,10 +136,12 @@ view model =
                                         [ Html.text <| String.fromChar char ]
                                 )
                         )
-
-                    --                    , Html.node "thock-trigger" [ Attr.attribute "trigger" message ] []
                     , thockTrigger recentKeys
                     ]
+                , Html.footer
+                    [ Attr.class "fixed bottom-0 text-center w-full"
+                    ]
+                    [ Html.a [ Attr.href "https://cekrem.github.io" ] [ Html.text "made by cekrem" ] ]
                 ]
 
             Nothing ->
@@ -147,6 +149,7 @@ view model =
     }
 
 
+thockTrigger : List Char -> Html.Html msg
 thockTrigger recentKeys =
     case recentKeys of
         [] ->
