@@ -136,13 +136,35 @@ view model =
                                         [ Html.text <| String.fromChar char ]
                                 )
                         )
-                    , Html.node "thock-trigger" [ Attr.attribute "trigger" message ] []
+
+                    --                    , Html.node "thock-trigger" [ Attr.attribute "trigger" message ] []
+                    , thockTrigger recentKeys
                     ]
                 ]
 
             Nothing ->
                 []
     }
+
+
+thockTrigger recentKeys =
+    case recentKeys of
+        [] ->
+            Html.text ""
+
+        lastChar :: rest ->
+            let
+                code =
+                    lastChar |> Char.toCode |> String.fromInt
+
+                seq =
+                    rest |> String.fromList
+            in
+            Html.node "thock-trigger"
+                [ Attr.attribute "code" code
+                , Attr.attribute "seq" seq
+                ]
+                []
 
 
 
