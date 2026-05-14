@@ -106,12 +106,12 @@ view model =
         case model.data of
             Just { recentKeys, message } ->
                 [ Html.div
-                    [ Attr.class "flex flex-col justify-center h-dvh"
+                    [ Attr.class "flex flex-col md:justify-center h-dvh"
                     , Attr.class "font-mono text-center"
-                    , Attr.class "max-md:has-[textarea:focus]:justify-start"
+                    , Attr.class "p-4"
                     ]
                     [ Html.h1
-                        [ Attr.class "px-[8vw] text-[4vw]" ]
+                        [ Attr.class "p-[8vw] text-[4vw]" ]
                         [ Html.text title ]
                     , Html.p
                         [ Attr.class "pt-10" ]
