@@ -3,7 +3,7 @@ module Frontend exposing (..)
 import Browser exposing (UrlRequest(..))
 import Browser.Events as BrowserEvents
 import Browser.Navigation as Nav
-import Html
+import Html exposing (Html)
 import Html.Attributes as Attr
 import Json.Decode as Json
 import Lamdera
@@ -139,14 +139,24 @@ view model =
                     , thockTrigger recentKeys
                     ]
                 , Html.footer
-                    [ Attr.class "fixed bottom-0 text-center w-full"
+                    [ Attr.class "fixed p-2 bottom-0 text-center w-full"
                     ]
                     [ Html.a [ Attr.href "https://cekrem.github.io" ] [ Html.text "made by cekrem" ] ]
+                , mobileKeyboard
                 ]
 
             Nothing ->
                 []
     }
+
+
+mobileKeyboard : Html msg
+mobileKeyboard =
+    Html.textarea
+        [ Attr.class "fixed top-0 bottom-0 left-0 right-0 opacity-0 md:hidden"
+        , Attr.autofocus True
+        ]
+        []
 
 
 thockTrigger : List Char -> Html.Html msg
