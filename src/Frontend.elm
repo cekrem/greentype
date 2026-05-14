@@ -5,6 +5,7 @@ import Browser.Events as BrowserEvents
 import Browser.Navigation as Nav
 import Html exposing (Html)
 import Html.Attributes as Attr
+import Html.Events as Events
 import Json.Decode as Json
 import Lamdera
 import Types exposing (..)
@@ -150,11 +151,12 @@ view model =
     }
 
 
-mobileKeyboard : Html msg
+mobileKeyboard : Html FrontendMsg
 mobileKeyboard =
     Html.textarea
         [ Attr.class "fixed top-0 bottom-0 left-0 right-0 opacity-0 md:hidden"
         , Attr.autofocus True
+        , Events.onInput KeyPressed
         ]
         []
 
@@ -186,7 +188,7 @@ thockTrigger recentKeys =
 
 onKeyPressSubscription : Sub FrontendMsg
 onKeyPressSubscription =
-    BrowserEvents.onKeyPress keyCodeDecoder
+    BrowserEvents.onKeyDown keyCodeDecoder
 
 
 keyCodeDecoder : Json.Decoder FrontendMsg
