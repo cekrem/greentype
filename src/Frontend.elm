@@ -108,6 +108,7 @@ view model =
                 [ Html.div
                     [ Attr.class "flex flex-col justify-center h-dvh"
                     , Attr.class "font-mono text-center"
+                    , Attr.class "max-md:has-[textarea:focus]:justify-start"
                     ]
                     [ Html.h1
                         [ Attr.class "px-[8vw] text-[4vw]" ]
@@ -143,7 +144,7 @@ view model =
                     [ Attr.class "fixed p-2 bottom-0 text-center w-full"
                     ]
                     [ Html.a [ Attr.href "https://cekrem.github.io" ] [ Html.text "made by cekrem" ] ]
-                , mobileKeyboard
+                , mobileKeyboardTextarea
                 ]
 
             Nothing ->
@@ -151,8 +152,8 @@ view model =
     }
 
 
-mobileKeyboard : Html FrontendMsg
-mobileKeyboard =
+mobileKeyboardTextarea : Html FrontendMsg
+mobileKeyboardTextarea =
     Html.textarea
         [ Attr.class "fixed top-0 bottom-0 left-0 right-0 opacity-0 md:hidden"
         , Attr.autofocus True
