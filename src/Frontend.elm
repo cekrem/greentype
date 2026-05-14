@@ -141,7 +141,7 @@ view model =
                     , thockTrigger recentKeys
                     ]
                 , Html.footer
-                    [ Attr.class "fixed p-2 bottom-0 text-center w-full"
+                    [ Attr.class "fixed z-10 p-2 bottom-0 text-center w-full"
                     ]
                     [ Html.a [ Attr.href "https://cekrem.github.io" ] [ Html.text "made by cekrem" ] ]
                 , mobileKeyboardTextarea
@@ -155,7 +155,7 @@ view model =
 mobileKeyboardTextarea : Html FrontendMsg
 mobileKeyboardTextarea =
     Html.textarea
-        [ Attr.class "fixed top-0 bottom-0 left-0 right-0 opacity-0 md:hidden"
+        [ Attr.class "fixed z-5 top-0 bottom-0 left-0 right-0 opacity-0 md:hidden"
         , Attr.autofocus True
         , Events.onInput KeyPressed
         ]
