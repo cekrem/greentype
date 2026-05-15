@@ -7,6 +7,7 @@ import Url exposing (Url)
 
 type alias FrontendModel =
     { key : Key
+    , keyboard : String
     , data :
         Maybe
             { message : String
@@ -24,7 +25,9 @@ type alias BackendModel =
 type FrontendMsg
     = UrlClicked UrlRequest
     | UrlChanged Url
+    | KeyboardChanged String
     | KeyPressed String
+    | BlurredSelect
 
 
 type ToBackend

@@ -1,6 +1,7 @@
 module Frontend exposing (..)
 
 import Browser exposing (UrlRequest(..))
+import Browser.Dom
 import Browser.Events as BrowserEvents
 import Browser.Navigation as Nav
 import Html exposing (Html)
@@ -8,6 +9,7 @@ import Html.Attributes as Attr
 import Html.Events as Events
 import Json.Decode as Json
 import Lamdera
+import Task
 import Types exposing (..)
 import Url
 
@@ -29,9 +31,14 @@ app =
         }
 
 
+
+-- init
+
+
 init : Url.Url -> Nav.Key -> ( Model, Cmd FrontendMsg )
 init _ key =
     ( { key = key
+      , keyboard = "cherrymx-blue-abs"
       , data = Nothing
       }
     , Lamdera.sendToBackend RequestedData
@@ -60,6 +67,9 @@ update msg model =
         UrlChanged _ ->
             ( model, Cmd.none )
 
+        KeyboardChanged keyboard ->
+            ( { model | keyboard = keyboard }, Task.attempt (always BlurredSelect) (Browser.Dom.blur "select") )
+
         KeyPressed key ->
             case String.uncons key of
                 Just ( 'E', "nter" ) ->
@@ -73,6 +83,9 @@ update msg model =
 
                 _ ->
                     ( model, Cmd.none )
+
+        BlurredSelect ->
+            ( model, Cmd.none )
 
 
 updateFromBackend : ToFrontend -> Model -> ( Model, Cmd FrontendMsg )
@@ -106,48 +119,22 @@ view model =
         case model.data of
             Just { recentKeys, message } ->
                 [ Html.div
-                    [ Attr.class "flex flex-col md:justify-center h-dvh"
-                    , Attr.class "font-mono text-center"
+                    [ Attr.class "flex flex-col md:justify-center"
+                    , Attr.class "h-dvh"
+                    , Attr.class "gap-8"
                     , Attr.class "p-4"
+                    , Attr.class "font-mono text-center"
                     ]
                     [ Html.h1
-                        [ Attr.class "p-[8vw] text-[4vw]" ]
+                        [ Attr.class "px-[8vw] text-[4vw]" ]
                         [ Html.text title ]
-                    , Html.p
-                        [ Attr.class "pt-10" ]
-                        [ Html.text message ]
-                    , Html.div
-                        [ Attr.class "flex flex-row-reverse justify-around items-center"
-                        , Attr.class "w-2/3 h-48"
-                        , Attr.class "text-[6vw]"
-                        ]
-                        (recentKeys
-                            |> List.indexedMap
-                                (\i char ->
-                                    let
-                                        faded =
-                                            (1.0
-                                                - (toFloat i * 0.04)
-                                            )
-                                                |> String.fromFloat
-                                    in
-                                    Html.div
-                                        [ Attr.style "opacity" faded
-                                        , Attr.style "font-size" (faded ++ "em")
-                                        ]
-                                        [ Html.text <| String.fromChar char ]
-                                )
-                        )
-                    , thockTrigger recentKeys
+                    , viewKeyboardSelector model.keyboard
+                    , Html.p [] [ Html.text message ]
+                    , viewRecentKeys recentKeys
                     ]
-                , Html.footer
-                    [ Attr.class "fixed z-10 p-2 bottom-0 text-center w-full"
-                    ]
-                    [ Html.a [ Attr.href "https://cekrem.github.io" ] [ Html.text "made by cekrem" ]
-                    , Html.text " · sounds by "
-                    , Html.a [ Attr.href "https://mechvibes.com" ] [ Html.text "mechvibes" ]
-                    ]
-                , mobileKeyboardTextarea
+                , viewFooter
+                , viewMobileKeyboardTextarea
+                , thockTrigger model.keyboard recentKeys
                 ]
 
             Nothing ->
@@ -155,18 +142,96 @@ view model =
     }
 
 
-mobileKeyboardTextarea : Html FrontendMsg
-mobileKeyboardTextarea =
+keyboards : List String
+keyboards =
+    [ "cherrymx-blue-abs"
+    , "cherrymx-blue-pbt"
+    , "cherrymx-black-abs"
+    , "cherrymx-black-pbt"
+    , "cherrymx-brown-abs"
+    , "cherrymx-brown-pbt"
+    , "cherrymx-red-abs"
+    , "cherrymx-red-pbt"
+    ]
+
+
+viewKeyboardSelector : String -> Html FrontendMsg
+viewKeyboardSelector selected =
+    Html.select
+        [ Attr.id "select"
+        , Attr.class "z-10"
+        , Attr.class "w-auto"
+        , Attr.class "self-center"
+        , Attr.class "p-2"
+        , Attr.class "text-xl"
+        , Attr.class "bg-gray-100"
+        , Attr.class "rounded"
+        , Attr.class "outline-4 outline-[#0F0]"
+        , Attr.class "appearance-none"
+        , Events.onInput KeyboardChanged
+        ]
+        (keyboards
+            |> List.map
+                (\name ->
+                    Html.option [ Attr.selected <| name == selected ] [ Html.text name ]
+                )
+        )
+
+
+viewRecentKeys : List Char -> Html msg
+viewRecentKeys recentKeys =
+    Html.div
+        [ Attr.class "flex flex-row-reverse items-center justify-around"
+        , Attr.class "h-[6vw] w-2/3"
+        , Attr.class "text-[6vw]"
+        ]
+        (recentKeys
+            |> List.indexedMap
+                (\i char ->
+                    let
+                        faded =
+                            (1.0
+                                - (toFloat i * 0.04)
+                            )
+                                |> String.fromFloat
+                    in
+                    Html.div
+                        [ Attr.style "opacity" faded
+                        , Attr.style "font-size" (faded ++ "em")
+                        ]
+                        [ Html.text <| String.fromChar char ]
+                )
+        )
+
+
+viewFooter : Html msg
+viewFooter =
+    Html.footer
+        [ Attr.class "fixed bottom-0 z-10"
+        , Attr.class "w-full"
+        , Attr.class "p-2"
+        , Attr.class "text-center"
+        ]
+        [ Html.a [ Attr.href "https://cekrem.github.io" ] [ Html.text "made by cekrem" ]
+        , Html.text " · sounds by "
+        , Html.a [ Attr.href "https://mechvibes.com" ] [ Html.text "mechvibes" ]
+        ]
+
+
+viewMobileKeyboardTextarea : Html FrontendMsg
+viewMobileKeyboardTextarea =
     Html.textarea
-        [ Attr.class "fixed z-5 top-0 bottom-0 left-0 right-0 opacity-0 md:hidden"
+        [ Attr.class "md:hidden"
+        , Attr.class "fixed top-0 right-0 bottom-0 left-0 z-5"
+        , Attr.class "opacity-0"
         , Attr.autofocus True
         , Events.onInput KeyPressed
         ]
         []
 
 
-thockTrigger : List Char -> Html.Html msg
-thockTrigger recentKeys =
+thockTrigger : String -> List Char -> Html.Html msg
+thockTrigger keyboard recentKeys =
     case recentKeys of
         [] ->
             Html.text ""
@@ -182,6 +247,7 @@ thockTrigger recentKeys =
             Html.node "thock-trigger"
                 [ Attr.attribute "code" code
                 , Attr.attribute "seq" seq
+                , Attr.attribute "keyboard" keyboard
                 ]
                 []
 

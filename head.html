@@ -1,11 +1,10 @@
 <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<!-- Keyboard sounds courtesy of Mechvibes (https://mechvibes.com) -->
 <script>
   (() => {
-    const PACK = "cherrymx-blue-abs";
-    const CONFIG_URL = `${PACK}/config.json`;
-    const SOUND_URL = `${PACK}/sound.ogg`;
-
     const FALLBACK_CHAR = 97; // 'a'
+    const MECHVIBES_SOUNDPACK_PATH =
+      "https://raw.githubusercontent.com/hainguyents13/mechvibes/refs/heads/main/src/audio";
 
     // Unicode code point -> Mechvibes scan code (the keys in config.json).
     // Uppercase letters share scan codes with their lowercase counterparts;
@@ -85,18 +84,28 @@
     };
     for (let c = 65; c <= 90; c++) CHAR_TO_SCAN[c] = CHAR_TO_SCAN[c + 32];
 
+    let pack = null;
     let ctx = null;
     let buffer = null;
     let defines = null;
     let ready = false;
     let initPromise = null;
 
-    function init() {
-      if (initPromise) return initPromise;
+    function init(selectedPack = "cherrymx-blue-abs") {
+      if (initPromise && pack === selectedPack) return initPromise;
+
+      ready = false;
+      ctx = null;
+      buffer = null;
+      pack = selectedPack;
+
+      const configUrl = `${MECHVIBES_SOUNDPACK_PATH}/${pack}/config.json`;
+      const soundUrl = `${MECHVIBES_SOUNDPACK_PATH}/${pack}/sound.ogg`;
+
       initPromise = (async () => {
         const [cfg, audio] = await Promise.all([
-          fetch(CONFIG_URL).then((r) => r.json()),
-          fetch(SOUND_URL).then((r) => r.arrayBuffer()),
+          fetch(configUrl).then((r) => r.json()),
+          fetch(soundUrl).then((r) => r.arrayBuffer()),
         ]);
         defines = {};
         for (const [charCode, scan] of Object.entries(CHAR_TO_SCAN)) {
@@ -130,14 +139,22 @@
       "thock-trigger",
       class extends HTMLElement {
         static get observedAttributes() {
-          return ["seq"];
+          return ["seq", "keyboard"];
         }
         connectedCallback() {
           init();
         }
         attributeChangedCallback(name, oldVal, newVal) {
-          if (name !== "seq" || newVal === null || newVal === oldVal) return;
-          play(this.getAttribute("code"));
+          if (oldVal === newVal) {
+            return;
+          }
+
+          if (name === "seq") {
+            play(this.getAttribute("code"));
+          }
+          if (name === "keyboard") {
+            init(newVal);
+          }
         }
       },
     );
