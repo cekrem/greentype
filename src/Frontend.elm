@@ -143,7 +143,10 @@ view model =
                 , Html.footer
                     [ Attr.class "fixed z-10 p-2 bottom-0 text-center w-full"
                     ]
-                    [ Html.a [ Attr.href "https://cekrem.github.io" ] [ Html.text "made by cekrem" ] ]
+                    [ Html.a [ Attr.href "https://cekrem.github.io" ] [ Html.text "made by cekrem" ]
+                    , Html.text " · sounds by "
+                    , Html.a [ Attr.href "https://mechvibes.com" ] [ Html.text "mechvibes" ]
+                    ]
                 , mobileKeyboardTextarea
                 ]
 
